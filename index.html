@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Ok-beräkning – brädavstånd</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --border: #d1d5db;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --text-main: #111827;
+      --text-muted: #4b5563;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+    }
+
+    .app {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 2rem;
+    }
+
+    .header {
+      background: var(--card-bg);
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .header-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .header-sub {
+      margin: 0.35rem 0 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .layout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem 1.1rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05);
+    }
+
+    .card-input {
+      flex: 1 1 320px;
+      min-width: 0;
+    }
+
+    .card-output {
+      flex: 1 1 320px;
+      min-width: 0;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 0.4rem;
+    }
+
+    .help-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 0.6rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      margin-top: 0.2rem;
+      padding: 0.4rem 0.55rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    input[type="number"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    .row > div {
+      flex: 1 1 120px;
+      min-width: 0;
+    }
+
+    button {
+      margin-top: 0.9rem;
+      padding: 0.55rem 1.2rem;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    button:hover {
+      background: var(--primary-dark);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .error {
+      color: #b91c1c;
+      font-weight: 500;
+      font-size: 0.9rem;
+      margin-top: 0.4rem;
+    }
+
+    .result {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-top: 0.4rem;
+    }
+
+    .muted {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .result-block {
+      margin-top: 0.5rem;
+      padding-top: 0.4rem;
+      border-top: 1px dashed var(--border);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.3rem 1rem;
+      margin-top: 0.4rem;
+    }
+
+    .grid-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .grid-value {
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: right;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.6rem;
+      font-size: 0.8rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.35rem;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #e5e7eb;
+      font-weight: 600;
+    }
+
+    .footer-note {
+      margin-top: 0.8rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: left;
+    }
+
+    @media (max-width: 720px) {
+      .header {
+        padding: 0.8rem 0.9rem;
+      }
+      .card {
+        padding: 0.9rem 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1 class="header-title">Ok-beräkning – brädavstånd</h1>
+      <p class="header-sub">
+        Beräknar kantavstånd, mellanrum och c/c-mått för brädor som spikas på ett ok.
+      </p>
+    </header>
+
+    <main class="layout">
+      <!-- INDATA -->
+      <section class="card card-input">
+        <h2 class="card-title">Indata</h2>
+        <p class="help-text">
+          Alla mått anges i samma enhet (t.ex. mm).<br>
+          • Lämna kantavstånd tomt eller 0 ⇒ första brädan ligger kant i kant med okets ytterkant.<br>
+          • Fyll i kantavstånd ⇒ appen räknar ut mellanrummet mellan brädorna.
+        </p>
+
+        <label for="lengthOk">Längd på ok</label>
+        <input id="lengthOk" type="number" min="0" step="0.1" value="1200">
+
+        <div class="row">
+          <div>
+            <label for="boardWidth">Brädans bredd</label>
+            <input id="boardWidth" type="number" min="0" step="0.1" value="95">
+          </div>
+          <div>
+            <label for="boardCount">Antal brädor</label>
+            <input id="boardCount" type="number" min="1" step="1" value="4">
+          </div>
+        </div>
+
+        <label for="edgeGap">Kantavstånd (ok-kant → första brädans kant)</label>
+        <input id="edgeGap" type="number" min="0" step="0.1" placeholder="Tomt eller 0 = kant i kant">
+
+        <button type="button" onclick="calculate()">Beräkna</button>
+
+        <div id="error" class="error"></div>
+      </section>
+
+      <!-- RESULTAT -->
+      <section class="card card-output">
+        <h2 class="card-title">Resultat</h2>
+        <p class="help-text">
+          Mått redovisas i samma enhet som indata. Positioner räknas från vänster ok-kant.
+        </p>
+        <div id="results" class="result"></div>
+      </section>
+    </main>
+
+    <div class="footer-note">
+      Skapad av JL
+    </div>
+  </div>
+
+  <script>
+    function calculate() {
+      const L = parseFloat(document.getElementById('lengthOk').value);
+      const w = parseFloat(document.getElementById('boardWidth').value);
+      const N = parseInt(document.getElementById('boardCount').value, 10);
+      const edgeInput = document.getElementById('edgeGap').value.trim();
+      const eRaw = edgeInput === '' ? NaN : parseFloat(edgeInput);
+
+      const errorEl = document.getElementById('error');
+      const resultsEl = document.getElementById('results');
+      errorEl.textContent = '';
+      resultsEl.innerHTML = '';
+
+      if (isNaN(L) || isNaN(w) || isNaN(N) || L <= 0 || w <= 0 || N <= 0) {
+        errorEl.textContent = 'Kontrollera att ok-längd, brädans bredd och antal brädor är ifyllda och större än noll.';
+        return;
+      }
+
+      const totalBoardWidth = N * w;
+      if (totalBoardWidth > L + 1e-9) {
+        errorEl.textContent = 'Brädorna får inte plats på oket (total brädbredd är större än ok-längden).';
+        return;
+      }
+
+      let e;         // kantavstånd vänster
+      let g;         // mellanrum mellan brädor
+      let rightGap;  // kantavstånd höger
+      let modeText = '';
+
+      // Fall: kantavstånd är angivet och > 0
+      if (!isNaN(eRaw) && eRaw > 0) {
+        e = eRaw;
+
+        if (N === 1) {
+          // En bräda, styr bara vänster kantavstånd
+          if (e + w > L + 1e-9) {
+            errorEl.textContent = 'Brädan får inte plats med angivet kantavstånd.';
+            return;
+          }
+          g = 0;
+          rightGap = L - e - w;
+          modeText = 'Läge: Givet kantavstånd, en bräda.';
+        } else {
+          const numerator = L - 2 * e - totalBoardWidth;
+          g = numerator / (N - 1);
+          if (g < -1e-9) {
+            errorEl.textContent = 'Kantavståndet är för stort – det finns inte plats för positiva mellanrum mellan brädorna.';
+            return;
+          }
+          if (g < 0) g = 0;
+          rightGap = e; // symmetriskt
+          modeText = 'Läge: Givet kantavstånd – mellanrum mellan brädor är uträknat.';
+        }
+      } else {
+        // Fall: kantavstånd tomt eller 0 => första brädan kant i kant
+        e = 0;
+
+        if (N === 1) {
+          g = 0;
+          rightGap = L - w;
+          modeText = 'Läge: Första brädan kant i kant – en bräda.';
+        } else {
+          const numerator = L - totalBoardWidth;
+          g = numerator / (N - 1);
+          if (g < -1e-9) {
+            errorEl.textContent = 'Brädorna får inte plats på oket med kant i kant-läge.';
+            return;
+          }
+          if (g < 0) g = 0;
+          rightGap = 0; // sista brädan också kant i kant
+          modeText = 'Läge: Första brädan kant i kant – mellanrum mellan brädor är uträknat.';
+        }
+      }
+
+      const cc = N > 1 ? w + g : NaN;
+
+      // Bygg resultat
+      let html = '';
+
+      html += `<div class="muted">${modeText}</div>`;
+
+      html += `<div class="result-block">`;
+      html += `<div class="grid">
+        <div class="grid-label">Ok-längd</div><div class="grid-value">${L.toFixed(1)}</div>
+        <div class="grid-label">Antal brädor</div><div class="grid-value">${N}</div>
+        <div class="grid-label">Brädans bredd</div><div class="grid-value">${w.toFixed(1)}</div>
+        <div class="grid-label">Angivet kantavstånd</div><div class="grid-value">${(!isNaN(eRaw) && eRaw > 0) ? eRaw.toFixed(1) : '0 (kant i kant)'}</div>
+      </div>`;
+      html += `</div>`;
+
+      html += `<div class="result-block">
+        <div class="grid">
+          <div class="grid-label">Kantavstånd vänster</div>
+          <div class="grid-value">${e.toFixed(1)}</div>
+          <div class="grid-label">Mellanrum mellan brädor</div>
+          <div class="grid-value">${g.toFixed(1)}</div>
+          <div class="grid-label">c/c-mått mellan brädor</div>
+          <div class="grid-value">${isNaN(cc) ? '-' : cc.toFixed(1)}</div>
+          <div class="grid-label">Kantavstånd höger</div>
+          <div class="grid-value">${rightGap.toFixed(1)}</div>
+        </div>
+      </div>`;
+
+      // Tabell med positioner
+      html += `<div class="result-block">
+        <div class="muted">Positioner räknat från vänster ok-kant (start = brädans vänstra kant):</div>
+        <table>
+          <tr>
+            <th>Bräda</th>
+            <th>Kant → brädans kant</th>
+            <th>Centrum</th>
+            <th>Start → nästa start (c/c)</th>
+          </tr>`;
+
+      let currentStart = e;
+      for (let i = 1; i <= N; i++) {
+        const center = currentStart + w / 2;
+        const nextStart = currentStart + w + g;
+        html += `<tr>
+          <td>${i}</td>
+          <td>${currentStart.toFixed(1)}</td>
+          <td>${center.toFixed(1)}</td>
+          <td>${i < N && !isNaN(cc) ? nextStart.toFixed(1) : '-'}</td>
+        </tr>`;
+        currentStart = nextStart;
+      }
+
+      html += `</table></div>`;
+
+      resultsEl.innerHTML = html;
+    }
+
+    // Kör en första beräkning med default-värden
+    calculate();
+  </script>
+</body>
+</html>
