@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Ok-beräkning">
-  <!-- Lägg ev. till en ikonfil i repo:t -->
+  <!-- Lägg ev. till en riktig ikon i repo:t -->
   <link rel="apple-touch-icon" href="icon-192.png">
 
   <style>
@@ -30,8 +30,19 @@
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
       color: var(--text-main);
+
+      /* “träplank”-bakgrund, ganska diskret */
+      background:
+        radial-gradient(circle at 10% 15%, rgba(0,0,0,0.06) 0, transparent 40px),
+        radial-gradient(circle at 80% 40%, rgba(0,0,0,0.04) 0, transparent 35px),
+        repeating-linear-gradient(
+          90deg,
+          #fefce8 0,
+          #fefce8 70px,
+          #f9f5e7 70px,
+          #f9f5e7 72px
+        );
     }
 
     .app {
@@ -111,10 +122,10 @@
       border-radius: 0.5rem;
       border: 1px solid var(--border);
       font-size: 0.9rem;
-      /* ta bort scroll/spinn-knappar */
-      -moz-appearance: textfield;
+      -moz-appearance: textfield; /* ta bort scroll i Firefox */
     }
 
+    /* ta bort scroll/spinn-knappar i WebKit */
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button {
       -webkit-appearance: none;
@@ -200,16 +211,18 @@
       text-align: right;
     }
 
+    /* TABELL – GJORD SMALARE FÖR MOBIL */
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 0.6rem;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
+      table-layout: fixed;
     }
 
     th, td {
       border: 1px solid var(--border);
-      padding: 0.3rem 0.35rem;
+      padding: 0.25rem 0.3rem;
       text-align: right;
       white-space: nowrap;
     }
@@ -219,14 +232,28 @@
       font-weight: 600;
     }
 
+    /* Smalare kolumner och centrerad första kolumnen */
+    th:nth-child(1),
+    td:nth-child(1) {
+      width: 3.2rem;
+      text-align: center;
+    }
+
+    th:nth-child(2),
+    td:nth-child(2),
+    th:nth-child(3),
+    td:nth-child(3),
+    th:nth-child(4),
+    td:nth-child(4) {
+      width: 5.2rem;
+    }
+
     .footer-note {
       margin-top: 0.8rem;
       font-size: 0.8rem;
       color: var(--text-muted);
       text-align: left;
     }
-
-    
 
     @media (max-width: 720px) {
       .header {
@@ -279,15 +306,12 @@
         <div id="error" class="error"></div>
       </section>
 
-      <!-- RESULTAT + FIGUR -->
+      <!-- RESULTAT -->
       <section class="card card-output">
         <h2 class="card-title">Resultat</h2>
         <p class="help-text">
           Mått redovisas i samma enhet som indata. Positioner räknas från vänster ok-kant.
         </p>
-
-
-
 
         <div id="results" class="result"></div>
       </section>
@@ -317,14 +341,6 @@
       }
 
       const totalBoardWidth = N * w;
-
-      // Avstånd mellan brädor får inte bli negativt (överlapp) – då är det fel indata.
-      // Själva kantavståndet (e) får vara negativt nu.
-      if (totalBoardWidth > L + Math.abs(totalBoardWidth) * 10) {
-        // extra dum-säkerhet, men i praktiken orimligt fall
-        errorEl.textContent = 'Indata verkar orimliga (total brädbredd mycket större än ok-längden).';
-        return;
-      }
 
       let e;         // kantavstånd vänster
       let g;         // mellanrum mellan brädor (>= 0)
@@ -376,22 +392,10 @@
 
       const cc = N > 1 ? w + g : NaN;
 
-      // Text för "angivet kantavstånd" i sammanfattning
-      let edgeLabel;
-      if (edgeInput === '') {
-        edgeLabel = '0 (kant i kant om möjligt)';
-      } else if (!isNaN(eRaw)) {
-        edgeLabel = eRaw.toFixed(1);
-      } else {
-        edgeLabel = '–';
-      }
-
       // Bygg resultat
       let html = '';
 
       html += `<div class="muted">${modeText}</div>`;
-
-     
 
       html += `<div class="result-block">
         <div class="grid">
@@ -406,15 +410,15 @@
         </div>
       </div>`;
 
-      // Tabell med positioner
+      // Tabell med positioner – rubriker gjorda kortare
       html += `<div class="result-block">
         <div class="muted">Positioner räknat från vänster ok-kant (start = brädans vänstra kant):</div>
         <table>
           <tr>
             <th>Bräda</th>
-            <th>Kant → brädkant</th>
+            <th>Kant→bräda</th>
             <th>Centrum</th>
-            <th>Start → nästa start (c/c)</th>
+            <th>Start c/c</th>
           </tr>`;
 
       let currentStart = e;
