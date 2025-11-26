@@ -5,6 +5,13 @@
   <title>Ok-beräkning – brädavstånd</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <!-- iPhone / PWA-vänligt -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Ok-beräkning">
+  <!-- Lägg ev. till en ikonfil i repo:t -->
+  <link rel="apple-touch-icon" href="icon-192.png">
+
   <style>
     :root {
       --bg: #f3f4f6;
@@ -104,6 +111,14 @@
       border-radius: 0.5rem;
       border: 1px solid var(--border);
       font-size: 0.9rem;
+      /* ta bort scroll/spinn-knappar */
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
 
     input[type="number"]:focus {
@@ -211,6 +226,17 @@
       text-align: left;
     }
 
+    .figure {
+      margin-bottom: 0.6rem;
+    }
+
+    .figure svg {
+      width: 100%;
+      max-width: 400px;
+      display: block;
+      margin: 0 auto;
+    }
+
     @media (max-width: 720px) {
       .header {
         padding: 0.8rem 0.9rem;
@@ -236,38 +262,89 @@
         <h2 class="card-title">Indata</h2>
         <p class="help-text">
           Alla mått anges i samma enhet (t.ex. mm).<br>
-          • Lämna kantavstånd tomt eller 0 ⇒ första brädan ligger kant i kant med okets ytterkant.<br>
-          • Fyll i kantavstånd ⇒ appen räknar ut mellanrummet mellan brädorna.
+          • Lämna kantavstånd tomt ⇒ första brädan ligger kant i kant med okets ytterkant.<br>
+          • Fyll i kantavstånd ⇒ värdet kan vara positivt (glapp inifrån kanten) eller negativt (brädan sticker ut).
         </p>
 
         <label for="lengthOk">Längd på ok</label>
-        <input id="lengthOk" type="number" min="0" step="0.1" value="1200">
+        <input id="lengthOk" type="number" step="0.1" value="1200">
 
         <div class="row">
           <div>
             <label for="boardWidth">Brädans bredd</label>
-            <input id="boardWidth" type="number" min="0" step="0.1" value="95">
+            <input id="boardWidth" type="number" step="0.1" value="95">
           </div>
           <div>
             <label for="boardCount">Antal brädor</label>
-            <input id="boardCount" type="number" min="1" step="1" value="4">
+            <input id="boardCount" type="number" step="1" value="4">
           </div>
         </div>
 
         <label for="edgeGap">Kantavstånd (ok-kant → första brädans kant)</label>
-        <input id="edgeGap" type="number" min="0" step="0.1" placeholder="Tomt eller 0 = kant i kant">
+        <input id="edgeGap" type="number" step="0.1" placeholder="Tomt = kant i kant, kan vara negativt">
 
         <button type="button" onclick="calculate()">Beräkna</button>
 
         <div id="error" class="error"></div>
       </section>
 
-      <!-- RESULTAT -->
+      <!-- RESULTAT + FIGUR -->
       <section class="card card-output">
         <h2 class="card-title">Resultat</h2>
         <p class="help-text">
           Mått redovisas i samma enhet som indata. Positioner räknas från vänster ok-kant.
         </p>
+
+        <!-- Figur som förklarar måtten -->
+        <div class="figure">
+          <svg viewBox="0 0 400 160">
+            <!-- Ok -->
+            <rect x="40" y="60" width="320" height="40" fill="#e5e7eb" stroke="#9ca3af" />
+            <text x="200" y="55" text-anchor="middle" font-size="10" fill="#4b5563">Ok</text>
+
+            <!-- Bräda 1 -->
+            <rect x="80" y="65" width="80" height="30" fill="#bfdbfe" stroke="#2563eb" />
+            <text x="120" y="82" text-anchor="middle" font-size="10" fill="#1f2933">Bräda 1</text>
+
+            <!-- Bräda 2 -->
+            <rect x="190" y="65" width="80" height="30" fill="#bfdbfe" stroke="#2563eb" />
+            <text x="230" y="82" text-anchor="middle" font-size="10" fill="#1f2933">Bräda 2</text>
+
+            <!-- Kantavstånd (vänster) -->
+            <line x1="40" y1="110" x2="80" y2="110" stroke="#6b7280" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+            <text x="60" y="125" text-anchor="middle" font-size="10" fill="#374151">kantavstånd</text>
+
+            <!-- Mellanrum mellan brädor -->
+            <line x1="160" y1="40" x2="190" y2="40" stroke="#6b7280" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+            <text x="175" y="30" text-anchor="middle" font-size="10" fill="#374151">mellanrum</text>
+
+            <!-- Brädans bredd -->
+            <line x1="80" y1="25" x2="160" y2="25" stroke="#6b7280" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+            <text x="120" y="15" text-anchor="middle" font-size="10" fill="#374151">brädans bredd</text>
+
+            <!-- c/c -->
+            <line x1="120" y1="135" x2="230" y2="135" stroke="#6b7280" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+            <text x="175" y="148" text-anchor="middle" font-size="10" fill="#374151">c/c</text>
+
+            <!-- Centrum-markeringar -->
+            <line x1="120" y1="95" x2="120" y2="130" stroke="#9ca3af" stroke-dasharray="2,2" />
+            <circle cx="120" cy="95" r="2" fill="#111827" />
+            <line x1="230" y1="95" x2="230" y2="130" stroke="#9ca3af" stroke-dasharray="2,2" />
+            <circle cx="230" cy="95" r="2" fill="#111827" />
+
+            <!-- Pil-def -->
+            <defs>
+              <marker id="arrow" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 z" fill="#6b7280" />
+              </marker>
+            </defs>
+          </svg>
+          <p class="muted">
+            Figuren visar principen: kantavstånd från ok-kant till första bräda, mellanrum mellan brädor,
+            brädans bredd samt c/c mellan brädcentrum. Alla brädor behöver inte visas i figuren.
+          </p>
+        </div>
+
         <div id="results" class="result"></div>
       </section>
     </main>
@@ -296,42 +373,44 @@
       }
 
       const totalBoardWidth = N * w;
-      if (totalBoardWidth > L + 1e-9) {
-        errorEl.textContent = 'Brädorna får inte plats på oket (total brädbredd är större än ok-längden).';
+
+      // Avstånd mellan brädor får inte bli negativt (överlapp) – då är det fel indata.
+      // Själva kantavståndet (e) får vara negativt nu.
+      if (totalBoardWidth > L + Math.abs(totalBoardWidth) * 10) {
+        // extra dum-säkerhet, men i praktiken orimligt fall
+        errorEl.textContent = 'Indata verkar orimliga (total brädbredd mycket större än ok-längden).';
         return;
       }
 
       let e;         // kantavstånd vänster
-      let g;         // mellanrum mellan brädor
-      let rightGap;  // kantavstånd höger
+      let g;         // mellanrum mellan brädor (>= 0)
+      let rightGap;  // kantavstånd höger (kan bli negativt)
       let modeText = '';
 
-      // Fall: kantavstånd är angivet och > 0
-      if (!isNaN(eRaw) && eRaw > 0) {
+      // Fall A: användaren har angett ett kantavstånd (kan vara positivt, 0 eller negativt)
+      if (edgeInput !== '' && !isNaN(eRaw)) {
         e = eRaw;
 
         if (N === 1) {
-          // En bräda, styr bara vänster kantavstånd
-          if (e + w > L + 1e-9) {
-            errorEl.textContent = 'Brädan får inte plats med angivet kantavstånd.';
-            return;
-          }
+          // En bräda, vi sätter den med vänsterkant e
           g = 0;
-          rightGap = L - e - w;
-          modeText = 'Läge: Givet kantavstånd, en bräda.';
+          rightGap = L - e - w; // kan bli negativt = överhäng
+          modeText = 'Läge: Givet kantavstånd för första brädan (en bräda).';
         } else {
+          // Symmetriskt: samma kantavstånd på båda sidor (kan vara negativt = överhäng)
           const numerator = L - 2 * e - totalBoardWidth;
           g = numerator / (N - 1);
+
           if (g < -1e-9) {
-            errorEl.textContent = 'Kantavståndet är för stort – det finns inte plats för positiva mellanrum mellan brädorna.';
+            errorEl.textContent = 'Med angivet kantavstånd får brädorna negativt mellanrum (överlapp). Justera indata.';
             return;
           }
-          if (g < 0) g = 0;
-          rightGap = e; // symmetriskt
-          modeText = 'Läge: Givet kantavstånd – mellanrum mellan brädor är uträknat.';
+          if (g < 0) g = 0; // avrundningsbrus
+          rightGap = e;
+          modeText = 'Läge: Givet kantavstånd (symmetriskt) – mellanrum mellan brädor är uträknat.';
         }
       } else {
-        // Fall: kantavstånd tomt eller 0 => första brädan kant i kant
+        // Fall B: inget kantavstånd angivet ⇒ första brädan kant i kant med oket
         e = 0;
 
         if (N === 1) {
@@ -342,16 +421,26 @@
           const numerator = L - totalBoardWidth;
           g = numerator / (N - 1);
           if (g < -1e-9) {
-            errorEl.textContent = 'Brädorna får inte plats på oket med kant i kant-läge.';
+            errorEl.textContent = 'Brädorna får inte plats på oket med kant i kant-läge (mellanrum skulle bli negativt).';
             return;
           }
           if (g < 0) g = 0;
-          rightGap = 0; // sista brädan också kant i kant
-          modeText = 'Läge: Första brädan kant i kant – mellanrum mellan brädor är uträknat.';
+          rightGap = 0;
+          modeText = 'Läge: Första och sista brädan kant i kant – mellanrum mellan brädor är uträknat.';
         }
       }
 
       const cc = N > 1 ? w + g : NaN;
+
+      // Text för "angivet kantavstånd" i sammanfattning
+      let edgeLabel;
+      if (edgeInput === '') {
+        edgeLabel = '0 (kant i kant om möjligt)';
+      } else if (!isNaN(eRaw)) {
+        edgeLabel = eRaw.toFixed(1);
+      } else {
+        edgeLabel = '–';
+      }
 
       // Bygg resultat
       let html = '';
@@ -363,7 +452,7 @@
         <div class="grid-label">Ok-längd</div><div class="grid-value">${L.toFixed(1)}</div>
         <div class="grid-label">Antal brädor</div><div class="grid-value">${N}</div>
         <div class="grid-label">Brädans bredd</div><div class="grid-value">${w.toFixed(1)}</div>
-        <div class="grid-label">Angivet kantavstånd</div><div class="grid-value">${(!isNaN(eRaw) && eRaw > 0) ? eRaw.toFixed(1) : '0 (kant i kant)'}</div>
+        <div class="grid-label">Angivet kantavstånd</div><div class="grid-value">${edgeLabel}</div>
       </div>`;
       html += `</div>`;
 
@@ -386,7 +475,7 @@
         <table>
           <tr>
             <th>Bräda</th>
-            <th>Kant → brädans kant</th>
+            <th>Kant → brädkant</th>
             <th>Centrum</th>
             <th>Start → nästa start (c/c)</th>
           </tr>`;
